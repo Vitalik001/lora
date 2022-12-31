@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "spi.h"
 #include "gpio.h"
 
@@ -90,7 +91,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  uint16_t readvalue;
+  HAL_ADC_Start(&hadc1);
   myLoRa = newLoRa();
   LoRa_reset(&myLoRa);
   myLoRa.CS_port         = NSS_GPIO_Port;
@@ -112,25 +116,55 @@ int main(void)
   if (LoRa_init(&myLoRa) == LORA_OK){
 	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
   }
-  uint16_t LoRa_stat = 0;
-  LoRa_stat = LoRa_read(&myLoRa, RegVersion);
-//  LoRa_startReceiving(&myLoRa);
-//  int test = 0;
-//  uint8_t TxBuffer[128];
-//  TxBuffer[0] = 45;
-//  TxBuffer[1] = 0x12;
-//  TxBuffer[2] = 'G';
-////
-//  LoRa_transmit(&myLoRa, TxBuffer, 3, 500);
-  /* USER CODE END 2 */
+
+
+
+//transmitter
+//  int stat= 0;
+//  char*  send_data;
+//  send_data = "Hello world!";
+//  if(LoRa_transmit(&myLoRa, (uint8_t*)send_data, 12, 100) == 1){
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+//  }
+  //receiver
+  uint8_t received_data[12];
+  uint8_t packet_size = 0;
+  LoRa_startReceiving(&myLoRa);
+//  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  // receiver
   while (1)
   {
-//	  LoRa_stat = LoRa_init(&myLoRa);
-//	  LoRa_init(&myLoRa);
-	  LoRa_stat = LoRa_read(&myLoRa, RegVersion);
+//	  Transmitter
+//	   Reading from photoresistor
+//	  HAL_ADC_PollForConversion(&hadc1, 1000);
+//	  readvalue = HAL_ADC_GetValue(&hadc1);
+////	  stat = LoRa_init(&myLoRa);
+////	  send_data = "Hello world!";
+////	  sprintf(send_data, "%d", readvalue);
+////
+//	    if(LoRa_transmit(&myLoRa, (uint8_t*)send_data, strlen(send_data), 100) == 1){
+//	  	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+//	    }
+//	    else {
+//	    	 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+//	    }
+//	    HAL_Delay(500);
+
+//	  receiver
+	  packet_size = LoRa_receive(&myLoRa, received_data, 12);
+	  if (packet_size == 10) {
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+	  }
+	  HAL_Delay(500);
+	  if (LoRa_init(&myLoRa) == LORA_OK){
+	  	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_SET);
+	    }
+	  else{
+		  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, GPIO_PIN_RESET);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
